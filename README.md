@@ -12,7 +12,7 @@
 
 GitHub Pages 提供信件畫面；回覆透過原本網站的 `/api/reply` 儲存到同一份資料庫，因此可重新查看或修改。後端網站 https://october-letter-for-you.v0900173978.chatgpt.site/ 需要持續運作。
 
-Gmail 通知沿用已設定的自動化，不在瀏覽器寄信。repository 不包含資料庫回覆、憑證或環境變數。
+Email 通知改由後端在回覆保存成功後立即呼叫 Resend；相同內容重複提交不重寄。正式啟用需要在 Sites 設定 `RESEND_API_KEY`（secret）與 `EMAIL_FROM`（已驗證網域的寄件地址）。未設定時只保存回覆，畫面會顯示 Email 尚未啟用。原本 Gmail 排程與 FormSubmit 都保持停用。repository 不包含資料庫回覆、憑證或環境變數。
 
 ## 字型授權
 
