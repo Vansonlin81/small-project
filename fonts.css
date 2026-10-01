@@ -1,0 +1,15 @@
+@font-face {
+  font-family: 'Letter Hand';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(hand-0.woff) format('woff');
+}
+
+@font-face {
+  font-family: 'Letter Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(serif-0.woff) format('woff');
+}
