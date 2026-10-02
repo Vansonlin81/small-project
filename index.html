@@ -1,4 +1,65 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="theme-color" content="#f4efe4"/><meta name="description" content="十月的某一天，想和妳分一點甜。"/><title>十月，見字如面</title><link rel="icon" href="/small-project/favicon.svg"/><link rel="stylesheet" href="/small-project/fonts.css"/>  <script type="module" crossorigin src="/small-project/index-DExjQKYM.js"></script>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#f4efe4"/>
+  <meta name="description" content="十月的某一天，想和妳分一點甜。"/>
+  <meta name="robots" content="noindex,nofollow,noarchive"/>
+  <meta name="referrer" content="no-referrer"/>
+  <title>十月，見字如面</title>
+  <link rel="icon" href="/small-project/favicon.svg"/>
+  <link rel="stylesheet" href="/small-project/fonts.css"/>
   <link rel="stylesheet" crossorigin href="/small-project/index-D9ehIjgI.css">
-</head><body><div id="root"></div></body></html>
+  <style>
+    #invite-denied{display:none;min-height:100vh;box-sizing:border-box;padding:48px 24px;align-items:center;justify-content:center;text-align:center;background:#f4efe4;color:#51483e;font-family:serif}
+    #invite-denied .card{max-width:520px;padding:36px 28px;border:1px solid rgba(81,72,62,.18);border-radius:18px;background:rgba(255,255,255,.42);box-shadow:0 12px 40px rgba(81,72,62,.08)}
+    #invite-denied h1{font-size:1.5rem;font-weight:500;margin:0 0 12px}
+    #invite-denied p{margin:0;line-height:1.8;opacity:.8}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <div id="invite-denied" aria-live="polite">
+    <div class="card">
+      <h1>這封信有指定的收件人。</h1>
+      <p>如果妳是收到邀請的人，請從我傳給妳的專屬連結打開。</p>
+    </div>
+  </div>
+  <script>
+    (async () => {
+      const INVITE_HASH = '74357581a58a6b15a7b682cd5d41d0b04dd2464c959257261000aef767e473fb';
+      const sessionKey = 'small-project-invite-ok';
+      const params = new URLSearchParams(location.search);
+      const token = params.get('invite') || '';
+
+      async function sha256(text) {
+        const data = new TextEncoder().encode(text);
+        const digest = await crypto.subtle.digest('SHA-256', data);
+        return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+      }
+
+      let allowed = sessionStorage.getItem(sessionKey) === '1';
+      if (!allowed && token) {
+        allowed = (await sha256(token)) === INVITE_HASH;
+        if (allowed) {
+          sessionStorage.setItem(sessionKey, '1');
+          history.replaceState({}, document.title, location.pathname + location.hash);
+        }
+      }
+
+      if (!allowed) {
+        document.getElementById('root').remove();
+        document.getElementById('invite-denied').style.display = 'flex';
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.type = 'module';
+      script.crossOrigin = 'anonymous';
+      script.src = '/small-project/index-DExjQKYM.js';
+      document.head.appendChild(script);
+    })();
+  </script>
+</body>
+</html>
