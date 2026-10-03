@@ -1,5 +1,6 @@
 const ALLOWED_ORIGIN = 'https://vansonlin81.github.io';
-const VALID_DATES = new Set(['2026-10-09','2026-10-10']);
+const TEST_EMAIL_FROM = 'Birthday Letter <onboarding@resend.dev>';
+const TEST_EMAIL_TO = 'v0900173978@gmail.com';
 
 function setCors(res) {
   res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
@@ -74,7 +75,7 @@ export default async function handler(req, res) {
   const providedToken = req.headers['x-invite-token'] || '';
   if (!expectedToken || providedToken !== expectedToken) return bad(res, 403, 'Invalid invite token');
 
-  if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM || !process.env.EMAIL_TO) {
+  if (!process.env.RESEND_API_KEY) {
     return bad(res, 500, 'Email service is not configured');
   }
 
@@ -89,12 +90,12 @@ export default async function handler(req, res) {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM,
-        to: [process.env.EMAIL_TO],
+        from: TEST_EMAIL_FROM,
+        to: [TEST_EMAIL_TO],
         subject: '妗嬅回覆了生日邀約 💌',
         text: formatReply(reply),
       }),
@@ -103,7 +104,7 @@ export default async function handler(req, res) {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
       console.error('Resend error', response.status, data);
-      return bad(res, 502, '回信已送出，但 Email 暫時寄送失敗。');
+      return bad(res, 502, data?.message || 'Email 暫時寄送失敗。');
     }
 
     return res.status(200).json({ reply: { ...reply, emailStatus: 'accepted' }, emailId: data.id || null });
