@@ -33,7 +33,8 @@
       const tokenKey = 'small-project-invite-token';
       const params = new URLSearchParams(location.search);
       const token = params.get('invite') || '';
-      const replyApi = 'https://october-letter-for-you.v0900173978.chatgpt.site/api/reply';
+      const legacyReplyApi = 'https://october-letter-for-you.v0900173978.chatgpt.site/api/reply';
+      const vercelReplyApi = 'https://small-project-rjawzd2ir-vanson2.vercel.app/api/reply';
 
       async function sha256(text) {
         const data = new TextEncoder().encode(text);
@@ -57,23 +58,26 @@
         return;
       }
 
-      // The mailbox backend can currently redirect unauthenticated visitors to sign-in.
-      // A failed initial GET should not prevent the invitee from choosing dates.
       const nativeFetch = window.fetch.bind(window);
       window.fetch = async (input, init = {}) => {
         const url = typeof input === 'string' ? input : input?.url;
         const method = String(init?.method || 'GET').toUpperCase();
-        if (url === replyApi && method === 'GET') {
-          try {
-            return await nativeFetch(input, init);
-          } catch (error) {
-            console.warn('Mailbox lookup unavailable; continuing with a blank reply form.', error);
-            return new Response(JSON.stringify({ reply: null, mailboxUnavailable: true }), {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' }
-            });
-          }
+
+        if (url === legacyReplyApi && method === 'GET') {
+          return new Response(JSON.stringify({ reply: null }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' }
+          });
         }
+
+        if (url === legacyReplyApi && method === 'POST') {
+          const inviteToken = sessionStorage.getItem(tokenKey) || '';
+          const headers = new Headers(init.headers || {});
+          headers.set('Content-Type', 'application/json');
+          headers.set('X-Invite-Token', inviteToken);
+          return nativeFetch(vercelReplyApi, { ...init, method: 'POST', headers });
+        }
+
         return nativeFetch(input, init);
       };
 
