@@ -69,6 +69,15 @@
       });
       coverCopyObserver.observe(root, { childList: true, subtree: true });
 
+      const replyHeadingObserver = new MutationObserver(() => {
+        const heading = document.querySelector('.reply h2.hand');
+        if (heading && heading.textContent.trim() === '把某一天，留給我們。') {
+          heading.textContent = '挑一天，吃點甜的~~~';
+          replyHeadingObserver.disconnect();
+        }
+      });
+      replyHeadingObserver.observe(root, { childList: true, subtree: true });
+
       const nativeFetch = window.fetch.bind(window);
       window.fetch = async (input, init = {}) => {
         const url = typeof input === 'string' ? input : input?.url;
