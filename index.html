@@ -16,6 +16,9 @@
     #invite-denied .card{max-width:520px;padding:36px 28px;border:1px solid rgba(81,72,62,.18);border-radius:18px;background:rgba(255,255,255,.42);box-shadow:0 12px 40px rgba(81,72,62,.08)}
     #invite-denied h1{font-size:1.5rem;font-weight:500;margin:0 0 12px}
     #invite-denied p{margin:0;line-height:1.8;opacity:.8}
+    .choice-copy{display:inline-flex;flex-direction:column;gap:3px;line-height:1.35}
+    .choice-copy strong{font:inherit;font-weight:500}
+    .choice-copy small{font-size:.78em;opacity:.68;font-weight:400}
   </style>
 </head>
 <body>
@@ -59,14 +62,50 @@
       }
 
       const root = document.getElementById('root');
-      const coverCopyObserver = new MutationObserver(() => {
+
+      function setChoiceCopy(label, title, subtitle) {
+        if (!label || label.dataset.copyAdjusted === '1') return;
+        [...label.childNodes].forEach(node => {
+          if (node.nodeType === Node.TEXT_NODE) node.remove();
+        });
+        const copy = document.createElement('span');
+        copy.className = 'choice-copy';
+        const strong = document.createElement('strong');
+        strong.textContent = title;
+        const small = document.createElement('small');
+        small.textContent = subtitle;
+        copy.append(strong, small);
+        label.appendChild(copy);
+        label.dataset.copyAdjusted = '1';
+      }
+
+      function applyCopyChanges() {
         const message = document.querySelector('.envelope-message');
-        if (message) {
-          message.textContent = '準備了一點小心意，想找個時間交給妳~~~';
-          coverCopyObserver.disconnect();
-        }
-      });
-      coverCopyObserver.observe(root, { childList: true, subtree: true });
+        if (message) message.textContent = '準備了一點小心意，想找個時間交給妳~~~';
+
+        document.querySelectorAll('.between.hand').forEach(el => {
+          if (el.textContent.trim() === '讀到這裡，換妳寫幾句。') el.remove();
+        });
+
+        document.querySelectorAll('.reply h2.hand').forEach(el => {
+          if (el.textContent.trim() === '把某一天，留給我們。') {
+            el.textContent = '看看哪天比較方便。';
+          }
+        });
+
+        document.querySelectorAll('.choices .choice').forEach(label => {
+          const text = label.textContent.trim();
+          if (text === '准許攜糕出席') {
+            setChoiceCopy(label, '准許攜糕出席', '選個好日子，一起吃蛋糕。');
+          } else if (text === '時間再一起商量') {
+            setChoiceCopy(label, '本小姐另有良辰', '容我翻翻行事曆');
+          }
+        });
+      }
+
+      const copyObserver = new MutationObserver(() => applyCopyChanges());
+      copyObserver.observe(root, { childList: true, subtree: true });
+      applyCopyChanges();
 
       const nativeFetch = window.fetch.bind(window);
       window.fetch = async (input, init = {}) => {
