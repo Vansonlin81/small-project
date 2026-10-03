@@ -30,6 +30,7 @@
     (async () => {
       const INVITE_HASH = '74357581a58a6b15a7b682cd5d41d0b04dd2464c959257261000aef767e473fb';
       const sessionKey = 'small-project-invite-ok';
+      const tokenKey = 'small-project-invite-token';
       const params = new URLSearchParams(location.search);
       const token = params.get('invite') || '';
       const replyApi = 'https://october-letter-for-you.v0900173978.chatgpt.site/api/reply';
@@ -45,6 +46,7 @@
         allowed = (await sha256(token)) === INVITE_HASH;
         if (allowed) {
           sessionStorage.setItem(sessionKey, '1');
+          sessionStorage.setItem(tokenKey, token);
           history.replaceState({}, document.title, location.pathname + location.hash);
         }
       }
