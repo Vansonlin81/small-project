@@ -32,6 +32,7 @@
       const sessionKey = 'small-project-invite-ok';
       const params = new URLSearchParams(location.search);
       const token = params.get('invite') || '';
+      const replyApi = 'https://october-letter-for-you.v0900173978.chatgpt.site/api/reply';
 
       async function sha256(text) {
         const data = new TextEncoder().encode(text);
@@ -53,6 +54,26 @@
         document.getElementById('invite-denied').style.display = 'flex';
         return;
       }
+
+      // The mailbox backend can currently redirect unauthenticated visitors to sign-in.
+      // A failed initial GET should not prevent the invitee from choosing dates.
+      const nativeFetch = window.fetch.bind(window);
+      window.fetch = async (input, init = {}) => {
+        const url = typeof input === 'string' ? input : input?.url;
+        const method = String(init?.method || 'GET').toUpperCase();
+        if (url === replyApi && method === 'GET') {
+          try {
+            return await nativeFetch(input, init);
+          } catch (error) {
+            console.warn('Mailbox lookup unavailable; continuing with a blank reply form.', error);
+            return new Response(JSON.stringify({ reply: null, mailboxUnavailable: true }), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' }
+            });
+          }
+        }
+        return nativeFetch(input, init);
+      };
 
       const script = document.createElement('script');
       script.type = 'module';
