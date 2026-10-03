@@ -64,7 +64,7 @@
       const root = document.getElementById('root');
 
       function setChoiceCopy(label, title, subtitle) {
-        if (!label || label.dataset.copyAdjusted === '1') return;
+        if (!label || label.dataset.copyAdjusted === '1') return false;
         [...label.childNodes].forEach(node => {
           if (node.nodeType === Node.TEXT_NODE) node.remove();
         });
@@ -77,11 +77,15 @@
         copy.append(strong, small);
         label.appendChild(copy);
         label.dataset.copyAdjusted = '1';
+        return true;
       }
 
       function applyCopyChanges() {
         const message = document.querySelector('.envelope-message');
-        if (message) message.textContent = '準備了一點小心意，想找個時間交給妳~~~';
+        const desiredMessage = '準備了一點小心意，想找個時間交給妳~~~';
+        if (message && message.textContent !== desiredMessage) {
+          message.textContent = desiredMessage;
+        }
 
         document.querySelectorAll('.between.hand').forEach(el => {
           if (el.textContent.trim() === '讀到這裡，換妳寫幾句。') el.remove();
@@ -94,6 +98,7 @@
         });
 
         document.querySelectorAll('.choices .choice').forEach(label => {
+          if (label.dataset.copyAdjusted === '1') return;
           const text = label.textContent.trim();
           if (text === '准許攜糕出席') {
             setChoiceCopy(label, '准許攜糕出席', '選個好日子，一起吃蛋糕。');
