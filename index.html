@@ -58,6 +58,16 @@
         return;
       }
 
+      const root = document.getElementById('root');
+      const coverCopyObserver = new MutationObserver(() => {
+        const message = document.querySelector('.envelope-message');
+        if (message) {
+          message.textContent = '準備了一點小心意，想找個時間交給妳~~~';
+          coverCopyObserver.disconnect();
+        }
+      });
+      coverCopyObserver.observe(root, { childList: true, subtree: true });
+
       const nativeFetch = window.fetch.bind(window);
       window.fetch = async (input, init = {}) => {
         const url = typeof input === 'string' ? input : input?.url;
